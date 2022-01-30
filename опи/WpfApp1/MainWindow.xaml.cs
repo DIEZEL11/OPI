@@ -1,9 +1,8 @@
 ﻿
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.IO;
 using System.Windows;
 
 namespace WpfApp1
@@ -13,7 +12,8 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string connectionString = @"Data Source=DIZZEL;Initial Catalog=OPI;Integrated Security=True;";
+        //private string connectionString = @"Data Source=DIZZEL;Initial Catalog=OPI;Integrated Security=True;";
+        private string connectionString = @"Data Source = opi.db";
         public MainWindow()
         {
             InitializeComponent();
@@ -22,23 +22,27 @@ namespace WpfApp1
         }
         public void FillClient()
         {
-           
+
+
             try
             {
 
 
                 string sql = "select client.id,client.fio,client.DATE,(Trener.FIO) as 'FIO Trener' from client left join Trener on Trener.id = client.IdTrener";
 
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand cmdSel = new SqlCommand(sql, connection))
+                    using (SqliteCommand cmdSel = new SqliteCommand(sql, connection))
                     {
+
+
                         DataTable dt = new DataTable();
-                        SqlDataAdapter da = new SqlDataAdapter(cmdSel);
-                        da.Fill(dt);
+                        dt.Load(cmdSel.ExecuteReader());
+
                         Client_Grid.DataContext = dt;
                     }
+
                     connection.Close();
                 }
             }
@@ -52,16 +56,19 @@ namespace WpfApp1
 
                 string sql = "SELECT * FROM Trener";
 
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand cmdSel = new SqlCommand(sql, connection))
+                    using (SqliteCommand cmdSel = new SqliteCommand(sql, connection))
                     {
+
+
                         DataTable dt = new DataTable();
-                        SqlDataAdapter da = new SqlDataAdapter(cmdSel);
-                        da.Fill(dt);
+                        dt.Load(cmdSel.ExecuteReader());
+
                         Trener_Grid.DataContext = dt;
                     }
+
                     connection.Close();
                 }
             }
@@ -80,8 +87,7 @@ namespace WpfApp1
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
-            System.Data.SqlClient.SqlConnection sqlConnection1 =
-new System.Data.SqlClient.SqlConnection(connectionString);
+            SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
             AddTrener s = new AddTrener();
             try
             {
@@ -90,9 +96,9 @@ new System.Data.SqlClient.SqlConnection(connectionString);
 
 
 
-                    System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
-                    cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.CommandText = "INSERT Trener (FIO,Date) VALUES ('" + s.Fio.Text + "',' " + s.Date + "')"; ;
+                    SqliteCommand cmd = new SqliteCommand();
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "INSERT INTO Trener (FIO,Date) VALUES ('" + s.Fio.Text + "',' " + s.Date + "')"; ;
                     cmd.Connection = sqlConnection1;
 
                     sqlConnection1.Open();
@@ -112,16 +118,15 @@ new System.Data.SqlClient.SqlConnection(connectionString);
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            System.Data.SqlClient.SqlConnection sqlConnection1 =
-new System.Data.SqlClient.SqlConnection(connectionString);
+            SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
 
             List<client> c = new List<client> { };
-            SqlCommand com = new SqlCommand("select * from trener", sqlConnection1);
+            SqliteCommand com = new SqliteCommand("select * from trener", sqlConnection1);
             try
             {
                 AddClient s = new AddClient();
                 sqlConnection1.Open();
-                SqlDataReader reader;
+                SqliteDataReader reader;
                 reader = com.ExecuteReader();
                 while (reader.Read())
                 {
@@ -150,10 +155,9 @@ new System.Data.SqlClient.SqlConnection(connectionString);
                 {
 
 
-
-                    System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+                    SqliteCommand cmd = new SqliteCommand();
                     cmd.CommandType = System.Data.CommandType.Text;
-                    cmd.CommandText = "INSERT client (FIO,Date,idTrener ) VALUES ('" + s.Fio.Text + "',' " + s.Date + "'," + s.Client.SelectedValue + ")"; ;
+                    cmd.CommandText = "INSERT INTO client (FIO,Date,idTrener ) VALUES ('" + s.Fio.Text + "',' " + s.Date + "'," + s.Client.SelectedValue + ")"; ;
                     cmd.Connection = sqlConnection1;
 
                     sqlConnection1.Open();
@@ -177,11 +181,10 @@ new System.Data.SqlClient.SqlConnection(connectionString);
             if (dataRow != null)
             {
                 string cellValue = dataRow.Row.ItemArray[0].ToString();
-                System.Data.SqlClient.SqlConnection sqlConnection1 =
-    new System.Data.SqlClient.SqlConnection(connectionString);
+                SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
 
 
-                System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+                SqliteCommand cmd = new SqliteCommand();
                 cmd.CommandType = System.Data.CommandType.Text;
                 cmd.CommandText = "DELETE FROM client WHERE id=" + cellValue + "";
                 cmd.Connection = sqlConnection1;
@@ -202,12 +205,11 @@ new System.Data.SqlClient.SqlConnection(connectionString);
             if (dataRow != null)
             {
                 string cellValue = dataRow.Row.ItemArray[0].ToString();
-                System.Data.SqlClient.SqlConnection sqlConnection1 =
-    new System.Data.SqlClient.SqlConnection(@"Data Source=DIZZEL;Initial Catalog=OPI;Integrated Security=True;");
+                SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
 
 
-                System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
-                cmd.CommandType = System.Data.CommandType.Text;
+                SqliteCommand cmd = new SqliteCommand();
+                cmd.CommandType = CommandType.Text;
                 cmd.CommandText = "DELETE FROM trener WHERE id=" + cellValue + "";
                 cmd.Connection = sqlConnection1;
                 sqlConnection1.Open();
@@ -223,18 +225,17 @@ new System.Data.SqlClient.SqlConnection(connectionString);
         {
             try
             {
-                
+
 
                 string sql = "select client.id,client.fio,client.DATE,(Trener.FIO) as 'FIO Trener' from client left join Trener on Trener.id = client.IdTrener where client.Fio like '%" + clintsearch.Text + "%' or Trener.Fio like '%" + clintsearch.Text + "%'";
 
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand cmdSel = new SqlCommand(sql, connection))
+                    using (SqliteCommand cmdSel = new SqliteCommand(sql, connection))
                     {
                         DataTable dt = new DataTable();
-                        SqlDataAdapter da = new SqlDataAdapter(cmdSel);
-                        da.Fill(dt);
+                        dt.Load(cmdSel.ExecuteReader());
                         Client_Grid.DataContext = dt;
                     }
                     connection.Close();
@@ -250,14 +251,14 @@ new System.Data.SqlClient.SqlConnection(connectionString);
 
                 string sql = "SELECT * FROM Trener where Fio like '%" + Trenersearch.Text + "%'";
 
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
                 {
                     connection.Open();
-                    using (SqlCommand cmdSel = new SqlCommand(sql, connection))
+                    using (SqliteCommand cmdSel = new SqliteCommand(sql, connection))
                     {
                         DataTable dt = new DataTable();
-                        SqlDataAdapter da = new SqlDataAdapter(cmdSel);
-                        da.Fill(dt);
+                        dt.Load(cmdSel.ExecuteReader());
+
                         Trener_Grid.DataContext = dt;
                     }
                     connection.Close();
@@ -275,12 +276,108 @@ new System.Data.SqlClient.SqlConnection(connectionString);
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("в следующей версии");
+            DataRowView dataRow = (DataRowView)Client_Grid.SelectedItem;
+            //int index = Client_Grid.CurrentCell.Column.DisplayIndex;
+            if (dataRow != null)
+            {
+                string cellValue = dataRow.Row.ItemArray[0].ToString();
+                SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
+
+                List<client> c = new List<client> { };
+                SqliteCommand com = new SqliteCommand("select * from trener", sqlConnection1);
+                try
+                {
+                    AddClient s = new AddClient();
+                    sqlConnection1.Open();
+                    SqliteDataReader reader;
+                    reader = com.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        try
+                        {
+                            int result2 = 0;
+                            string result = reader.GetString(1);
+                            if (!reader.IsDBNull(0))
+                                result2 = reader.GetInt16(0);
+
+                            c.Add(new client(result, result2));
+
+
+                        }
+                        catch (Exception f)
+                        {
+                            MessageBox.Show(f.ToString());
+                        }
+
+                    }
+                    s.Client.ItemsSource = c;
+
+
+                    sqlConnection1.Close();
+                    if (s.ShowDialog() == true)
+                    {
+
+
+                        SqliteCommand cmd = new SqliteCommand();
+                        cmd.CommandType = System.Data.CommandType.Text;
+                        cmd.CommandText = "UPDATE client set FIO='" + s.Fio.Text + "', date='" + s.Date + "', idTrener=" + s.Client.SelectedValue + " where id="+ cellValue + "";
+                        cmd.Connection = sqlConnection1;
+
+                        sqlConnection1.Open();
+                        cmd.ExecuteNonQuery();
+                        sqlConnection1.Close();
+
+                    }
+                    FillClient();
+
+                }
+
+                catch (Exception b)
+                {
+                    MessageBox.Show(b.ToString());
+                }
+            }
+            else
+            MessageBox.Show("Выберети строку");
         }
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("в следующей версии");
+            DataRowView dataRow = (DataRowView)Trener_Grid.SelectedItem;
+            //int index = Client_Grid.CurrentCell.Column.DisplayIndex;
+            if (dataRow != null)
+            {
+                string cellValue = dataRow.Row.ItemArray[0].ToString();
+                SqliteConnection sqlConnection1 = new SqliteConnection(connectionString);
+                AddTrener s = new AddTrener();
+                try
+                {
+                    if (s.ShowDialog() == true)
+                    {
+
+
+
+                        SqliteCommand cmd = new SqliteCommand();
+                        cmd.CommandType = CommandType.Text;
+                        cmd.CommandText = "UPDATE Trener set FIO='" + s.Fio.Text + "', date='" + s.Date + "'where id=" + cellValue + ""; 
+                        cmd.Connection = sqlConnection1;
+
+                        sqlConnection1.Open();
+                        cmd.ExecuteNonQuery();
+                        sqlConnection1.Close();
+
+                    }
+                    FillTrener();
+                }
+
+                catch (Exception a)
+                {
+                    MessageBox.Show(a.ToString());
+                }
+            }
+            else
+                MessageBox.Show("Выберети строку");
+
         }
     }
 }

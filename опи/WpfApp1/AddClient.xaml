@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="AddTrener" Height="213.838" Width="518.016">
+        Title="AddClient" Height="213.838" Width="518.016">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25*"/>
